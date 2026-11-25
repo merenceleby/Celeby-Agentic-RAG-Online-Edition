@@ -10,3 +10,4 @@ frontend/dist/
 .ruff_cache/
 .github/
 backend/.github/
+backend/data/eval/*.json

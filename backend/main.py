@@ -9,6 +9,7 @@ from fastapi.responses import JSONResponse
 from api.routes import router
 from config import settings
 from services.agent import NotIndexedError, RAGAgent
+from services.auth import COOKIE_NAME, AuthService
 from services.bm25_search import BM25Index
 from services.cache import Cache
 from services.chat_history import ChatHistory
@@ -47,6 +48,7 @@ async def lifespan(app: FastAPI):
     llm = GemmaClient()
     app.state.store, app.state.bm25, app.state.budget, app.state.llm = store, bm25, budget, llm
     app.state.history, app.state.metrics, app.state.feedback = ChatHistory(), Metrics(), Feedback()
+    app.state.auth = AuthService()
     app.state.indexer = Indexer(store, bm25)
     app.state.agent = RAGAgent(llm, Retrieval(store, bm25, reranker), budget, Cache())
     app.state.warmup = {"ready": False}
@@ -54,9 +56,27 @@ async def lifespan(app: FastAPI):
     yield
 
 
+PUBLIC_PATHS = {"/api/health", "/api/auth/status", "/api/auth/login", "/api/auth/logout"}
+
 app = FastAPI(title="Celeby Agentic RAG: Online Edition", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173"],
-                   allow_methods=["*"], allow_headers=["*"])
+                   allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+
+@app.middleware("http")
+async def _auth_gate(request: Request, call_next):
+    if (
+        settings.auth_enabled
+        and request.method != "OPTIONS"
+        and request.url.path.startswith("/api/")
+        and request.url.path not in PUBLIC_PATHS
+    ):
+        svc = getattr(request.app.state, "auth", None) or AuthService()
+        if not svc.verify_token(request.cookies.get(COOKIE_NAME)):
+            return JSONResponse(status_code=401, content={"error": "unauthorized", "message": "Giriş yapmanız gerekiyor."})
+    return await call_next(request)
+
+
 app.include_router(router)
 
 

@@ -62,6 +62,14 @@ class Settings:
     eval_dir: Path = BASE_DIR / "data" / "eval"
     eval_support_threshold: float = float(os.getenv("EVAL_SUPPORT_THRESHOLD", "0.5"))
 
+    # --- Giriş / Auth (lokalde kapalı, deploy ederken AUTH_ENABLED=true yap) ---
+    auth_enabled: bool = os.getenv("AUTH_ENABLED", "false").lower() == "true"
+    auth_username: str = os.getenv("AUTH_USERNAME", "")
+    auth_password: str = os.getenv("AUTH_PASSWORD", "")
+    auth_secret: str = os.getenv("AUTH_SECRET", "")
+    auth_max_attempts: int = _i("AUTH_MAX_ATTEMPTS", 2)  # 2'den fazla yanlışta (3. yanlışta) ban
+    auth_session_days: int = _i("AUTH_SESSION_DAYS", 7)
+
 
 settings = Settings()
 settings.state_dir.mkdir(parents=True, exist_ok=True)

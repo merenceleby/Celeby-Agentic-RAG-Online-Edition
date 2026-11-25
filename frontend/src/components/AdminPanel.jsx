@@ -138,8 +138,8 @@ export default function AdminPanel({ quota, refreshQuota, onBack }) {
               <p className="muted">Does the right page come back for your test questions? You have {qs.length} test {qs.length === 1 ? 'question' : 'questions'}.</p>
               <div className="eval-actions">
                 <label>Questions to generate
-                  <input className="num-input" type="number" min="1" max="20" value={genN}
-                    onChange={(e) => setGenN(Math.max(1, Math.min(20, Number(e.target.value) || 1)))} />
+                  <input className="num-input" type="number" min="1" max="6" value={genN}
+                    onChange={(e) => setGenN(Math.max(1, Math.min(6, Number(e.target.value) || 1)))} />
                 </label>
                 <button className="outline-btn" disabled={!!busy}
                   onClick={() => act('Generating questions', () => api.evalGenerate(genN), (r) => `Added ${r.added} test questions (${r.total} in total).`)}>

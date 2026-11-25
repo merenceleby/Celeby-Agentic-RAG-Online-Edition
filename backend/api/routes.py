@@ -3,13 +3,14 @@ import json
 from pathlib import Path
 from typing import Literal, Optional
 
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, HTTPException, Request, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from config import settings
 from services import evaluation
 from services.agent import NotIndexedError
+from services.auth import COOKIE_NAME, DAY_SECS, AuthBanError, AuthInvalidError, AuthService, client_ip
 from services.llm import LLMError
 from services.rate_limiter import RateLimitError
 
@@ -28,6 +29,55 @@ class FeedbackRequest(BaseModel):
     message_id: int
     rating: Literal[1, -1]
     comment: Optional[str] = Field(None, max_length=1000)
+
+
+class LoginRequest(BaseModel):
+    username: str = Field(min_length=1, max_length=100)
+    password: str = Field(min_length=1, max_length=200)
+
+
+def _auth(request: Request) -> AuthService:
+    svc = getattr(request.app.state, "auth", None)
+    if svc is None:
+        svc = AuthService()
+        request.app.state.auth = svc
+    return svc
+
+
+# ---------- Auth ----------
+@router.get("/auth/status")
+async def auth_status(request: Request):
+    if not settings.auth_enabled:
+        return {"enabled": False, "authenticated": True, "username": None}
+    user = _auth(request).verify_token(request.cookies.get(COOKIE_NAME))
+    return {"enabled": True, "authenticated": bool(user), "username": user}
+
+
+@router.post("/auth/login")
+async def auth_login(req: LoginRequest, request: Request, response: Response):
+    if not settings.auth_enabled:
+        return {"ok": True, "username": None}
+    try:
+        token = _auth(request).login(client_ip(request), req.username, req.password)
+    except AuthBanError as e:
+        raise HTTPException(
+            status_code=429,
+            detail=e.message,
+            headers={"Retry-After": str(e.retry_after)},
+        )
+    except AuthInvalidError as e:
+        raise HTTPException(status_code=401, detail=e.message)
+    response.set_cookie(
+        key=COOKIE_NAME, value=token, httponly=True, samesite="lax",
+        max_age=settings.auth_session_days * DAY_SECS, path="/",
+    )
+    return {"ok": True, "username": settings.auth_username}
+
+
+@router.post("/auth/logout")
+async def auth_logout(response: Response):
+    response.delete_cookie(key=COOKIE_NAME, path="/")
+    return {"ok": True}
 
 
 def _sse(event: str, data) -> str:

@@ -61,7 +61,7 @@ def save_questions(questions: list[dict]) -> None:
 
 async def generate_questions(llm, budget, store, n: int) -> dict:
     """Rastgele chunk'lardan n soru üretir (n çağrı harcar, dakikalık limite göre kısıtlanır)."""
-    n = max(1, min(n, 20, budget.rpm))
+    n = max(1, min(n, 6, budget.rpm))
     docs = await asyncio.to_thread(store.all_documents)
     pool = [d for d in docs if len(d["content"]) >= 300] or docs
     sample = random.sample(pool, min(n, len(pool)))

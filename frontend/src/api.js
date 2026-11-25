@@ -26,6 +26,9 @@ const json = (method, body) => ({
 })
 
 export const api = {
+  authStatus: () => request('/auth/status'),
+  login: (username, password) => request('/auth/login', json('POST', { username, password })),
+  logout: () => request('/auth/logout', { method: 'POST' }),
   health: () => request('/health'),
   quota: () => request('/quota'),
   indexStatus: () => request('/index/status'),
