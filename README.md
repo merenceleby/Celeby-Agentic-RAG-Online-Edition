@@ -141,6 +141,10 @@ docker-compose.yml    backend + frontend + redis
 docker-compose.dev.yml   hot-reload development setup
 ```
 
+## Deployment & Authentication
+
+- **Local-first by design:** Because local CPU PyTorch + multilingual embedding/re-ranker models require ~1.5–2 GB RAM, no live public demo is hosted on free 512 MB serverless tiers. To host it publicly, deploy with Docker on a VPS or cloud instance with at least 2 GB RAM. For this reason, the login system is disabled by default.
+
 ## Known limitations
 
 - Lightweight free-tier models can still make mistakes, and the validation step is a second opinion from the same model, not proof. Check the cited pages for anything important.

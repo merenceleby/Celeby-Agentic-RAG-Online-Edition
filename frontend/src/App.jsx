@@ -76,7 +76,7 @@ export default function App() {
             <button className="admin-btn" onClick={() => setView('admin')}>⚙️ Admin</button>
           </div>
           <h1><span aria-hidden="true">🤖</span> Celeby Agentic RAG <span aria-hidden="true">🤖</span></h1>
-          <div className="tags">{TAGS.map((t) => <span key={t}>{t}</span>)}</div>
+          {/* <div className="tags">{TAGS.map((t) => <span key={t}>{t}</span>)}</div> */}
           <div className="edition-wrap"><span className="edition">Online Edition</span></div>
           <p className="tagline">Advanced RAG with Query Rewriting, Hybrid Search &amp; Re-ranking</p>
         </header>

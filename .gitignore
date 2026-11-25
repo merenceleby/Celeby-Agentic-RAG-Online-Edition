@@ -8,6 +8,5 @@ frontend/node_modules/
 frontend/dist/
 .pytest_cache/
 .ruff_cache/
-.github/
-backend/.github/
+.github/workflows/release.yml
 backend/data/eval/*.json
