@@ -19,6 +19,10 @@ Question (+ chat history) → rewrite (3 variations, multilingual) → hybrid se
 
 There is no direct-to-LLM mode: every answer is grounded in your indexed documents.
 
+## Deployment & Authentication
+
+- **Local-first by design:** Because local CPU PyTorch + multilingual embedding/re-ranker models require ~1.5–2 GB RAM, no live public demo is hosted on free 512 MB serverless tiers. To host it publicly, deploy with Docker on a VPS or cloud instance with at least 2 GB RAM. For this reason, the login system is disabled by default.
+
 ## Key RAG & UX features
 
 - **Multilingual local retrieval (TR + EN):** Uses `intfloat/multilingual-e5-small` (512 tokens, with automatic `query:` / `passage:` prefixes) and `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` — both baked into the backend Docker image at build time for instant startup.
@@ -39,10 +43,6 @@ All model calls go through one gate (`services/rate_limiter.py`):
 - Identical Quality questions are served from Redis cache and cost no model calls.
 
 Check the live limits for your project in [Google AI Studio](https://aistudio.google.com/rate-limit) and set `LLM_MODEL`, `LLM_RPM`, `LLM_RPD` (and optionally `LLM_TPM` / `LLM_FALLBACK_MODEL`) in `.env`.
-
-## Privacy
-
-Questions, recent same-chat turns, and the text passages sent as context **leave your machine** and go to Google's API. This edition is not suitable for confidential or regulated documents. Review Google's Gemini API free-tier terms before uploading sensitive files.
 
 ## Quick start (Docker)
 
@@ -141,16 +141,48 @@ docker-compose.yml    backend + frontend + redis
 docker-compose.dev.yml   hot-reload development setup
 ```
 
-## Deployment & Authentication
-
-- **Local-first by design:** Because local CPU PyTorch + multilingual embedding/re-ranker models require ~1.5–2 GB RAM, no live public demo is hosted on free 512 MB serverless tiers. To host it publicly, deploy with Docker on a VPS or cloud instance with at least 2 GB RAM. For this reason, the login system is disabled by default.
-
 ## Known limitations
 
 - Lightweight free-tier models can still make mistakes, and the validation step is a second opinion from the same model, not proof. Check the cited pages for anything important.
 - Google can adjust free-tier RPM/RPD limits dynamically per project.
 - The app is built for single-user / personal use. A public deployment would need per-user auth and rate limits.
 - Indexing large PDFs on CPU can take several minutes. The optional token limit is estimated per call, not measured.
+
+## Screenshots & Video
+
+<p align="center">
+  <img width="900" alt="Chat Interface" src="https://github.com/user-attachments/assets/50768ebe-1381-415e-b5a3-017890a925a1" />
+  <br />
+  <em>Chat Interface (Quality Mode)</em>
+</p>
+
+<br />
+
+<p align="center">
+  <img width="900" alt="Lite Evaluation" src="https://github.com/user-attachments/assets/5629a17f-47a6-4754-856b-ec250f4a7969" />
+  <br />
+  <em>Lite Evaluation (Vector vs. Hybrid)</em>
+</p>
+
+<br />
+
+<p align="center">
+  <img width="900" alt="System Metrics" src="https://github.com/user-attachments/assets/531f7882-0f33-4190-a6be-d469a7834d8e" />
+  <br />
+  <em>Admin Panel — System Metrics</em>
+</p>
+
+<br />
+
+<p align="center">
+  <img width="900" alt="Quota & User Feedback" src="https://github.com/user-attachments/assets/7e01c0f7-ba03-4384-afaf-9f179df01338" />
+  <br />
+  <em>Admin Panel — Quota & User Feedback</em>
+</p>
+
+<p align="center">
+  🎥 <a href="https://youtu.be/zecm1sX_YXE" target="_blank"><b>Watch the Demo Video on YouTube</b></a>
+</p>
 
 ## License
 
