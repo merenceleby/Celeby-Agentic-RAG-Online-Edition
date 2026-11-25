@@ -1,0 +1,8 @@
+# Testler için hafif bağımlılıklar (torch, chromadb vb. gerekmez; testler sahte servislerle çalışır)
+fastapi
+python-multipart
+python-dotenv
+langgraph
+httpx
+pytest
+pytest-asyncio

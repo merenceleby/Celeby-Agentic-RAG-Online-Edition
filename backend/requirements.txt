@@ -1,0 +1,12 @@
+# İlk başarılı kurulumdan sonra `pip freeze` ile sürümleri sabitle.
+fastapi
+uvicorn[standard]
+python-multipart
+python-dotenv
+google-genai
+langgraph
+chromadb
+sentence-transformers
+rank-bm25
+pypdf
+redis

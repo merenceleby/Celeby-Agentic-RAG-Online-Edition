@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+backend/chroma_db/
+backend/state/
+backend/data/documents/*.pdf
+frontend/node_modules/
+frontend/dist/
+.pytest_cache/
+.ruff_cache/
+.github/
+backend/.github/

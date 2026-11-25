@@ -1,0 +1,41 @@
+# Her şey Docker içinde çalışır: bilgisayarına Python/Node kurmana gerek yok.
+#   cp .env.example .env     (GEMINI_API_KEY'i doldur)
+#   docker compose up -d --build
+# Arayüz: http://localhost:5173   API dokümanı: http://localhost:8000/docs
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/app/data      # PDF'lerin (bilgisayarından erişilebilir)
+      - chroma_db:/app/chroma_db      # vektör veritabanı
+      - state:/app/state              # sohbet geçmişi, metrikler, kota sayacı
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  chroma_db:
+  state:
